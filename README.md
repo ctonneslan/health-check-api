@@ -60,3 +60,11 @@ curl http://localhost:8000/health
   }
 }
 ```
+
+## Environment variables
+
+# Variable -- Description -- Default value
+
+EXTERNAL_API_URL -- The URL used for the external API check -- https://postman-echo.com/status/200
+DISK_WARN_THRESHOLD -- Warn threshold for disk usage (%) -- 70
+DISK_FAIL_THRESHOLD -- Fail threshold for disk usage (%) -- 90
