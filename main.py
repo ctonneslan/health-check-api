@@ -1,7 +1,16 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 import random
 import shutil
 import httpx
+import logging
+import json
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -12,6 +21,13 @@ async def health():
     disk = check_disk_usage()
     api = await check_external_api()
 
+    if db != "ok":
+        logger.warning(f"Database check status: {db}")
+    if disk != "ok":
+        logger.warning(f"Disk usage status: {disk}")
+    if api != "ok":
+        logger.warning(f"External API check failed with status: {api}")
+
     statuses = {db, disk, api}
     status = ""
     if "fail" in statuses:
@@ -20,15 +36,21 @@ async def health():
         status = "warn"
     else:
         status = "ok"
+    
+    logger.info(f"Overall health status: {status}")
 
-    return {
-        "status": status,
-        "components": {
-            "database": db,
-            "disk_usage": disk,
-            "external_api": api
-        }
-    }
+    return Response(
+        content=json.dumps({
+            "status": status,
+            "components": {
+                "database": db,
+                "disk_usage": disk,
+                "external_api": api
+            }
+        }),
+        media_type="application/json",
+        status_code=503 if status == "fail" else 200
+    )
 
 # 1. Database Check
 def check_database():
