@@ -13,6 +13,9 @@ import time
 load_dotenv() 
 
 EXTERNAL_API_URL = os.getenv("EXTERNAL_API_URL", "https://postman-echo.com/status/200")
+DISK_WARN_THRESHOLD = int(os.getenv("DISK_WARN_THRESHOLD", "70"))
+DISK_FAIL_THRESHOLD = int(os.getenv("DISK_FAIL_THRESHOLD", "90"))
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -31,7 +34,6 @@ async def health():
     db = check_database()
     db_time = (time.perf_counter() - t0) * 1000
     logger.info(f"Database check took {db_time:.2f} ms")
-
 
     # Disk usage check
     t0 = time.perf_counter()
@@ -99,12 +101,12 @@ def check_disk_usage():
     total, used, free = shutil.disk_usage("/")
     usage_percent = used / total * 100
 
-    if usage_percent < 70:
-        return "ok"
-    elif usage_percent < 90:
+    if usage_percent >= DISK_FAIL_THRESHOLD:
+        return "fail"
+    elif usage_percent >= DISK_WARN_THRESHOLD:
         return "warn"
     else:
-        return "fail"
+        return "ok"
     
 # 3. External API Check
 async def check_external_api():
