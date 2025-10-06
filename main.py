@@ -7,6 +7,7 @@ import json
 from datetime import datetime
 import os
 from dotenv import load_dotenv
+import time
 
 # Load variables from .env
 load_dotenv() 
@@ -25,10 +26,26 @@ app = FastAPI()
 # Add a /health route
 @app.get("/health")
 async def health():
+    # Database check
+    t0 = time.perf_counter()
     db = check_database()
-    disk = check_disk_usage()
-    api = await check_external_api()
+    db_time = (time.perf_counter() - t0) * 1000
+    logger.info(f"Database check took {db_time:.2f} ms")
 
+
+    # Disk usage check
+    t0 = time.perf_counter()
+    disk = check_disk_usage()
+    disk_time = (time.perf_counter() - t0) * 1000
+    logger.info(f"Disk usage check took {disk_time:.2f} ms")
+    
+    # External API check
+    t0 = time.perf_counter()
+    api = await check_external_api()
+    api_time = (time.perf_counter() - t0) * 1000
+    logger.info(f"External API check took {api_time:.2f} ms")
+
+    # Log component status levels
     if db != "ok":
         logger.warning(f"Database check status: {db}")
     if disk != "ok":
@@ -36,6 +53,7 @@ async def health():
     if api != "ok":
         logger.warning(f"External API check failed with status: {api}")
 
+    # Determine overall health status
     statuses = {db, disk, api}
     status = ""
     if "fail" in statuses:
@@ -47,6 +65,7 @@ async def health():
     
     logger.info(f"Overall health status: {status}")
 
+    # Include timestamp
     timestamp = datetime.utcnow().isoformat() + 'Z'
 
     return Response(
