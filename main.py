@@ -7,8 +7,18 @@ app = FastAPI()
 
 # Add a /health route
 @app.get("/health")
-def health():
-    return {}
+async def health():
+    db = check_database()
+    disk = check_disk_usage()
+    api = await check_external_api()
+
+    return {
+        "components": {
+            "database": db,
+            "disk_usage": disk,
+            "external_api": api
+        }
+    }
 
 # 1. Database Check
 def check_database():
