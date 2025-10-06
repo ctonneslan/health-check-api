@@ -12,7 +12,17 @@ async def health():
     disk = check_disk_usage()
     api = await check_external_api()
 
+    statuses = {db, disk, api}
+    status = ""
+    if "fail" in statuses:
+        status = "fail"
+    elif "warn" in statuses:
+        status = "warn"
+    else:
+        status = "ok"
+
     return {
+        "status": status,
         "components": {
             "database": db,
             "disk_usage": disk,
