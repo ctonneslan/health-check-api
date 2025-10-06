@@ -4,6 +4,7 @@ import shutil
 import httpx
 import logging
 import json
+from datetime import datetime
 
 logging.basicConfig(
     level=logging.INFO,
@@ -39,9 +40,12 @@ async def health():
     
     logger.info(f"Overall health status: {status}")
 
+    timestamp = datetime.utcnow().isoformat() + 'Z'
+
     return Response(
         content=json.dumps({
             "status": status,
+            "timestamp": timestamp,
             "components": {
                 "database": db,
                 "disk_usage": disk,
