@@ -47,10 +47,16 @@ curl http://localhost:8000/health
 ```json
 {
   "status": "ok",
+  "timestamp": "2025-10-06T23:10:41.000Z",
   "components": {
     "database": "ok",
     "disk_usage": "ok",
     "external_api": "ok"
+  },
+  "response_times_ms": {
+    "database": 0.12,
+    "disk_usage": 0.24,
+    "external_api": 351.73
   }
 }
 ```
