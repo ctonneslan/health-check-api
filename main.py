@@ -76,6 +76,11 @@ async def health():
                 "database": db,
                 "disk_usage": disk,
                 "external_api": api
+            },
+            "response_times_ms": {
+                "database": round(db_time, 2),
+                "disk_usage": round(disk_time, 2),
+                "external_api": round(api_time, 2)
             }
         }),
         media_type="application/json",
