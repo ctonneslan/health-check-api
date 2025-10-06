@@ -5,6 +5,13 @@ import httpx
 import logging
 import json
 from datetime import datetime
+import os
+from dotenv import load_dotenv
+
+# Load variables from .env
+load_dotenv() 
+
+EXTERNAL_API_URL = os.getenv("EXTERNAL_API_URL", "https://postman-echo.com/status/200")
 
 logging.basicConfig(
     level=logging.INFO,
@@ -79,7 +86,8 @@ def check_disk_usage():
 async def check_external_api():
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.get("https://postman-echo.com/status/200")
+            response = await client.get(EXTERNAL_API_URL)
             return "ok" if response.status_code == 200 else "fail"
-    except:
+    except Exception as e:
+        logger.error(f"External API check error: {e}")
         return "fail"
