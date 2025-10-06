@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 import random
 import shutil
+import httpx
 
 app = FastAPI()
 
@@ -9,14 +10,14 @@ app = FastAPI()
 def health():
     return {}
 
-# Database check
+# 1. Database Check
 def check_database():
     if random.random() < 0.9:
         return "ok"
     else:
         return "fail"
 
-# Disk usage
+# 2. Disk Usage Check
 def check_disk_usage():
     total, used, free = shutil.disk_usage("/")
     usage_percent = used / total * 100
@@ -26,4 +27,13 @@ def check_disk_usage():
     elif usage_percent < 90:
         return "warn"
     else:
+        return "fail"
+    
+# 3. External API Check
+async def check_external_api():
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get("https://postman-echo.com/status/200")
+            return "ok" if response.status_code == 200 else "fail"
+    except:
         return "fail"
