@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, Response, Query
 import logging
 import json
 from datetime import datetime, timedelta, timezone
@@ -35,7 +35,7 @@ app = FastAPI()
 
 # Add a /health route
 @app.get("/health")
-async def health():
+async def health(details: bool = Query(default=True, description="Include full health details")):
     # Database check
     t0 = time.perf_counter()
     db = check_database()
@@ -91,9 +91,12 @@ async def health():
     uptime_delta = datetime.now(timezone.utc) - app_start_time
     uptime_str = str(timedelta(seconds=int(uptime_delta.total_seconds())))
 
-    return Response(
-        content=json.dumps({
-            "status": status,
+    response_body = {
+        "status": status
+    }
+
+    if details:
+        response_body.update({
             "timestamp": timestamp,
             "uptime": uptime_str,
             "components": {
@@ -106,7 +109,10 @@ async def health():
                 "disk_usage": round(disk_time, 2),
                 "external_api": round(api_time, 2)
             }
-        }),
+        })
+
+    return Response(
+        content=json.dumps(response_body),
         media_type="application/json",
         status_code=503 if status == "fail" else 200
     )

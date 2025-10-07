@@ -41,7 +41,11 @@ uvicorn app.main:app --reload
 Example Response:
 
 ```bash
-curl http://localhost:8000/health
+curl "http://localhost:8000/health?details=true"
+
+# Note for Zsh users:
+# Always quote URLs with '?' to avoid glob errors like:
+# zsh: no matches found: /health?details=false
 ```
 
 ```json
