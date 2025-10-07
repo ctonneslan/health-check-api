@@ -8,6 +8,8 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 import time
+import psycopg2
+from psycopg2 import OperationalError
 
 # Load variables from .env
 load_dotenv() 
@@ -91,9 +93,18 @@ async def health():
 
 # 1. Database Check
 def check_database():
-    if random.random() < 0.9:
+    try:
+        conn = psycopg2.connect(
+            host=os.getenv("DB_HOST", "localhost"),
+            database=os.getenv("DB_NAME", "postgres"),
+            user=os.getenv("DB_USER", "postgres"),
+            password=os.getenv("DB_PASSWORD", "password"),
+            connect_timeout=1
+        )
+        conn.close()
         return "ok"
-    else:
+    except OperationalError as e:
+        logger.warning(f"Database connection failed: {e}")
         return "fail"
 
 # 2. Disk Usage Check
