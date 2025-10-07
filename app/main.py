@@ -5,9 +5,17 @@ from datetime import datetime, timedelta, timezone
 import os
 from dotenv import load_dotenv
 import time
+from time import perf_counter
 from app.health_checks import check_database, check_disk_usage, check_external_api
 from app.log_config import logger
 from app.middleware import RequestIDMiddleware, get_request_id
+from app.metrics import (
+    db_check_counter, disk_check_counter, api_check_counter,
+    db_response_histogram, disk_response_histogram, api_response_histogram,
+    app_uptime_gauge
+)
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+from fastapi.responses import Response as FastAPIResponse
 
 # Track when app starts
 app_start_time = datetime.now(timezone.utc)
@@ -24,13 +32,16 @@ SLOW_RESPONSE_THRESHOLD_MS = {
 app = FastAPI()
 app.add_middleware(RequestIDMiddleware)
 
-# Add a /health route
+# Add a /health endpoint
 @app.get("/health")
 async def health(details: bool = Query(default=True, description="Include full health details")):
     # Database check
-    t0 = time.perf_counter()
-    db = check_database()
-    db_time = (time.perf_counter() - t0) * 1000
+    t0 = perf_counter()
+    with db_response_histogram.time():
+        db = check_database()
+    db_time = (perf_counter() - t0) * 1000
+    db_check_counter.labels(status=db).inc()
+
     logger.info("Database check", extra={"extra": {
         "component": "database", "status": db, "duration_ms": round(db_time, 2)
     }})
@@ -38,9 +49,12 @@ async def health(details: bool = Query(default=True, description="Include full h
         logger.warning(f"Database check slow: {db_time:.2f} ms")
 
     # Disk usage check
-    t0 = time.perf_counter()
-    disk = check_disk_usage()
-    disk_time = (time.perf_counter() - t0) * 1000
+    t0 = perf_counter()
+    with disk_response_histogram.time():
+        disk = check_disk_usage()
+    disk_time = (perf_counter() - t0) * 1000
+    disk_check_counter.labels(status=disk).inc()
+
     logger.info("Disk usage check", extra={"extra": {
         "component": "disk_usage", "status": disk, "duration_ms": round(disk_time, 2)
     }})
@@ -48,9 +62,12 @@ async def health(details: bool = Query(default=True, description="Include full h
         logger.warning(f"Disk usage check slow: {disk_time:.2f} ms")
     
     # External API check
-    t0 = time.perf_counter()
-    api = await check_external_api()
-    api_time = (time.perf_counter() - t0) * 1000
+    t0 = perf_counter()
+    with api_response_histogram.time():
+        api = await check_external_api()
+    api_time = (perf_counter() - t0) * 1000
+    api_check_counter.labels(status=api).inc()
+
     logger.info("External API check", extra={"extra": {
         "component": "api", "status": api, "duration_ms": round(api_time, 2)
     }})
@@ -81,6 +98,7 @@ async def health(details: bool = Query(default=True, description="Include full h
     timestamp = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     uptime_delta = datetime.now(timezone.utc) - app_start_time
     uptime_str = str(timedelta(seconds=int(uptime_delta.total_seconds())))
+    app_uptime_gauge.set(uptime_delta.total_seconds())
 
     response_body = {
         "status": status,
@@ -108,3 +126,8 @@ async def health(details: bool = Query(default=True, description="Include full h
         media_type="application/json",
         status_code=503 if status == "fail" else 200
     )
+
+# Add a /metrics endpoint
+@app.get("/metrics")
+def metrics():
+    return FastAPIResponse(generate_latest(), media_type=CONTENT_TYPE_LATEST)

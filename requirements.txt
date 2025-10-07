@@ -4,4 +4,4 @@ https
 python-dotenv
 pytest
 pytest-asyncio
-psycopg2-binary
+prometheus_client
