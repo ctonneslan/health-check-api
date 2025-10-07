@@ -51,17 +51,18 @@ curl "http://localhost:8000/health?details=true"
 ```json
 {
   "status": "ok",
-  "timestamp": "2025-10-06T23:10:41.000Z",
-  "uptime": "0:14:23",
+  "request_id": "ed62dc19-e6dc-498d-ab18-7709996357bf",
+  "timestamp": "2025-10-07T15:26:55.505541Z",
+  "uptime": "0:02:58",
   "components": {
     "database": "ok",
     "disk_usage": "ok",
     "external_api": "ok"
   },
   "response_times_ms": {
-    "database": 0.12,
-    "disk_usage": 0.24,
-    "external_api": 351.73
+    "database": 0.01,
+    "disk_usage": 0.04,
+    "external_api": 258.81
   }
 }
 ```
