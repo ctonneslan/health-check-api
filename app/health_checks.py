@@ -1,6 +1,5 @@
 import shutil
 import httpx
-import time
 import logging
 from unittest import mock
 import os

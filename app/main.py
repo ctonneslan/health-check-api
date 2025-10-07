@@ -1,7 +1,4 @@
 from fastapi import FastAPI, Response
-import random
-import shutil
-import httpx
 import logging
 import json
 from datetime import datetime, timedelta, timezone
@@ -9,6 +6,7 @@ import os
 from dotenv import load_dotenv
 import time
 from app.health_checks import check_database, check_disk_usage, check_external_api
+from app.log_config import JSONFormatter
 
 # Track when app starts
 app_start_time = datetime.now(timezone.utc)
@@ -22,10 +20,14 @@ SLOW_RESPONSE_THRESHOLD_MS = {
     "external_api": int(os.getenv("SLOW_EXTERNAL_API_MS", "300")),
 }
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
+handler = logging.StreamHandler()
+handler.setFormatter(JSONFormatter())
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+logger.addHandler(handler)
+logger.propagate = False
+
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +40,9 @@ async def health():
     t0 = time.perf_counter()
     db = check_database()
     db_time = (time.perf_counter() - t0) * 1000
-    logger.info(f"Database check took {db_time:.2f} ms")
+    logger.info("Database check", extra={"extra": {
+        "component": "database", "status": db, "duration_ms": round(db_time, 2)
+    }})
     if db_time > SLOW_RESPONSE_THRESHOLD_MS["database"]:
         logger.warning(f"Database check slow: {db_time:.2f} ms")
 
@@ -46,7 +50,9 @@ async def health():
     t0 = time.perf_counter()
     disk = check_disk_usage()
     disk_time = (time.perf_counter() - t0) * 1000
-    logger.info(f"Disk usage check took {disk_time:.2f} ms")
+    logger.info("Disk usage check", extra={"extra": {
+        "component": "disk_usage", "status": disk, "duration_ms": round(disk_time, 2)
+    }})
     if disk_time > SLOW_RESPONSE_THRESHOLD_MS["disk_usage"]:
         logger.warning(f"Disk usage check slow: {disk_time:.2f} ms")
     
@@ -54,7 +60,9 @@ async def health():
     t0 = time.perf_counter()
     api = await check_external_api()
     api_time = (time.perf_counter() - t0) * 1000
-    logger.info(f"External API check took {api_time:.2f} ms")
+    logger.info("External API check", extra={"extra": {
+        "component": "api", "status": api, "duration_ms": round(api_time, 2)
+    }})
     if api_time > SLOW_RESPONSE_THRESHOLD_MS["external_api"]:
         logger.warning(f"External API check slow: {api_time:.2f} ms")
 
