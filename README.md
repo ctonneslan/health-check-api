@@ -48,6 +48,7 @@ curl http://localhost:8000/health
 {
   "status": "ok",
   "timestamp": "2025-10-06T23:10:41.000Z",
+  "uptime": "0:14:23",
   "components": {
     "database": "ok",
     "disk_usage": "ok",

@@ -4,10 +4,13 @@ import shutil
 import httpx
 import logging
 import json
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import os
 from dotenv import load_dotenv
 import time
+
+# Track when app starts
+app_start_time = datetime.now(timezone.utc)
 
 # Load variables from .env
 load_dotenv() 
@@ -66,13 +69,16 @@ async def health():
     
     logger.info(f"Overall health status: {status}")
 
-    # Include timestamp
-    timestamp = datetime.utcnow().isoformat() + 'Z'
+    # Include timestamp and uptime
+    timestamp = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    uptime_delta = datetime.now(timezone.utc) - app_start_time
+    uptime_str = str(timedelta(seconds=int(uptime_delta.total_seconds())))
 
     return Response(
         content=json.dumps({
             "status": status,
             "timestamp": timestamp,
+            "uptime": uptime_str,
             "components": {
                 "database": db,
                 "disk_usage": disk,
