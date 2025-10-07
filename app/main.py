@@ -91,12 +91,21 @@ async def health():
 # 1. Database Check
 def check_database():
     try:
-        if random.choice([True, False]):
+        if simulate_db_connection():
             return "ok"
         else:
-            raise Exception("Simulated failure")
-    except Exception:
+            return "fail"
+    except Exception as e:
+        logger.warning(f"Database simulation error: {e}")
         return "fail"
+
+def simulate_db_connection():
+    """
+    Simulate a DB connection. Can be toggled to always succeed or fail,
+    or replaced with real logic later.
+    """
+    # Change this return value manually to simulate failure or success
+    return True
 
 # 2. Disk Usage Check
 def check_disk_usage():
