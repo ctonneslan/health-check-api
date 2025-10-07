@@ -1,10 +1,8 @@
 from fastapi import FastAPI, Response, Query
-import logging
 import json
 from datetime import datetime, timedelta, timezone
 import os
 from dotenv import load_dotenv
-import time
 from time import perf_counter
 from app.health_checks import check_database, check_disk_usage, check_external_api
 from app.log_config import logger

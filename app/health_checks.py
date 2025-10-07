@@ -1,7 +1,5 @@
 import shutil
 import httpx
-import logging
-from unittest import mock
 import os
 from app.log_config import logger
 

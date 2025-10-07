@@ -1,7 +1,6 @@
 import pytest
 import sys
 import os
-import psycopg2
 from unittest import mock
 
 # Add the project root to sys.path so imports work
