@@ -77,3 +77,17 @@ curl "http://localhost:8000/health?details=true"
 | SLOW_DB_MS | Warn if database check takes longer than this (ms) | 100 |
 | SLOW_DISK_MS | Warn if disk usage check takes longer than this (ms) | 50 |
 | SLOW_EXTERNAL_API_MS | Warn if external API check takes longer than this (ms) | 300 |
+
+## Prometheus Metrics
+
+# Endpoint
+
+```bash
+curl http://localhost:8000/metrics
+```
+
+This returns standard Prometheus-formatted metrics for observability. It includes:
+
+- Health check counters for (1) database, (2) disk_usage, (3) external_api
+- Response time histograms: healthcheck\_<component>\_response_seconds
+- Application uptime: app_uptime_seconds
