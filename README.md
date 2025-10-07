@@ -68,13 +68,3 @@ curl http://localhost:8000/health
 | EXTERNAL_API_URL | The URL used for the external API check | https://postman-echo.com/status/200
 | DISK_WARN_THRESHOLD | Warn threshold for disk usage (%) | 70
 | DISK_FAIL_THRESHOLD | Fail threshold for disk usage (%) | 90
-| DB_HOST | Hostname for PostgreSQL connection check | `localhost` |
-| DB_NAME | Database name to connect to | `postgres` |
-| DB_USER | Database username | `postgres` |
-| DB_PASSWORD | Database password | `password` |
-
-## Notes
-
-The database check uses a real connection attempt with psycopg2.
-It’s wrapped in a try/except block to simulate realistic behavior without requiring a running PostgreSQL server.
-This lets you easily test both success and failure using environment variables.
