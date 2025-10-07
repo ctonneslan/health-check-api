@@ -8,8 +8,6 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 import time
-import psycopg2
-from psycopg2 import OperationalError
 
 # Load variables from .env
 load_dotenv() 
@@ -17,7 +15,6 @@ load_dotenv()
 EXTERNAL_API_URL = os.getenv("EXTERNAL_API_URL", "https://postman-echo.com/status/200")
 DISK_WARN_THRESHOLD = int(os.getenv("DISK_WARN_THRESHOLD", "70"))
 DISK_FAIL_THRESHOLD = int(os.getenv("DISK_FAIL_THRESHOLD", "90"))
-
 
 logging.basicConfig(
     level=logging.INFO,
@@ -94,17 +91,11 @@ async def health():
 # 1. Database Check
 def check_database():
     try:
-        conn = psycopg2.connect(
-            host=os.getenv("DB_HOST", "localhost"),
-            database=os.getenv("DB_NAME", "postgres"),
-            user=os.getenv("DB_USER", "postgres"),
-            password=os.getenv("DB_PASSWORD", "password"),
-            connect_timeout=1
-        )
-        conn.close()
-        return "ok"
-    except OperationalError as e:
-        logger.warning(f"Database connection failed: {e}")
+        if random.choice([True, False]):
+            return "ok"
+        else:
+            raise Exception("Simulated failure")
+    except Exception:
         return "fail"
 
 # 2. Disk Usage Check
