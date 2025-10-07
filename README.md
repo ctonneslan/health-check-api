@@ -31,7 +31,7 @@ pip install -r requirements.txt
 ### 1. Use uvicorn to run the FastAPI server:
 
 ```bash
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 ```
 
 ## Exposing the endpoint
