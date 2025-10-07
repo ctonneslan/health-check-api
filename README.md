@@ -69,3 +69,6 @@ curl http://localhost:8000/health
 | EXTERNAL_API_URL | The URL used for the external API check | https://postman-echo.com/status/200
 | DISK_WARN_THRESHOLD | Warn threshold for disk usage (%) | 70
 | DISK_FAIL_THRESHOLD | Fail threshold for disk usage (%) | 90
+| SLOW_DB_MS | Warn if database check takes longer than this (ms) | 100 |
+| SLOW_DISK_MS | Warn if disk usage check takes longer than this (ms) | 50 |
+| SLOW_EXTERNAL_API_MS | Warn if external API check takes longer than this (ms) | 300 |

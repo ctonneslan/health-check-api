@@ -18,6 +18,11 @@ load_dotenv()
 EXTERNAL_API_URL = os.getenv("EXTERNAL_API_URL", "https://postman-echo.com/status/200")
 DISK_WARN_THRESHOLD = int(os.getenv("DISK_WARN_THRESHOLD", "70"))
 DISK_FAIL_THRESHOLD = int(os.getenv("DISK_FAIL_THRESHOLD", "90"))
+SLOW_RESPONSE_THRESHOLD_MS = {
+    "database": int(os.getenv("SLOW_DB_MS", "100")),
+    "disk_usage": int(os.getenv("SLOW_DISK_MS", "50")),
+    "external_api": int(os.getenv("SLOW_EXTERNAL_API_MS", "300")),
+}
 
 logging.basicConfig(
     level=logging.INFO,
@@ -36,18 +41,24 @@ async def health():
     db = check_database()
     db_time = (time.perf_counter() - t0) * 1000
     logger.info(f"Database check took {db_time:.2f} ms")
+    if db_time > SLOW_RESPONSE_THRESHOLD_MS["database"]:
+        logger.warning(f"Database check slow: {db_time:.2f} ms")
 
     # Disk usage check
     t0 = time.perf_counter()
     disk = check_disk_usage()
     disk_time = (time.perf_counter() - t0) * 1000
     logger.info(f"Disk usage check took {disk_time:.2f} ms")
+    if disk_time > SLOW_RESPONSE_THRESHOLD_MS["disk_usage"]:
+        logger.warning(f"Disk usage check slow: {disk_time:.2f} ms")
     
     # External API check
     t0 = time.perf_counter()
     api = await check_external_api()
     api_time = (time.perf_counter() - t0) * 1000
     logger.info(f"External API check took {api_time:.2f} ms")
+    if api_time > SLOW_RESPONSE_THRESHOLD_MS["external_api"]:
+        logger.warning(f"External API check slow: {api_time:.2f} ms")
 
     # Log component status levels
     if db != "ok":
