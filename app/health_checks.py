@@ -3,9 +3,7 @@ import httpx
 import logging
 from unittest import mock
 import os
-
-# Setup logging
-logger = logging.getLogger(__name__)
+from app.log_config import logger
 
 EXTERNAL_API_URL = os.getenv("EXTERNAL_API_URL", "https://postman-echo.com/status/200")
 DISK_WARN_THRESHOLD = int(os.getenv("DISK_WARN_THRESHOLD", "70"))

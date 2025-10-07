@@ -6,7 +6,8 @@ import os
 from dotenv import load_dotenv
 import time
 from app.health_checks import check_database, check_disk_usage, check_external_api
-from app.log_config import JSONFormatter
+from app.log_config import logger
+from app.middleware import RequestIDMiddleware, get_request_id
 
 # Track when app starts
 app_start_time = datetime.now(timezone.utc)
@@ -20,18 +21,8 @@ SLOW_RESPONSE_THRESHOLD_MS = {
     "external_api": int(os.getenv("SLOW_EXTERNAL_API_MS", "300")),
 }
 
-handler = logging.StreamHandler()
-handler.setFormatter(JSONFormatter())
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-logger.addHandler(handler)
-logger.propagate = False
-
-
-logger = logging.getLogger(__name__)
-
 app = FastAPI()
+app.add_middleware(RequestIDMiddleware)
 
 # Add a /health route
 @app.get("/health")
@@ -92,7 +83,8 @@ async def health(details: bool = Query(default=True, description="Include full h
     uptime_str = str(timedelta(seconds=int(uptime_delta.total_seconds())))
 
     response_body = {
-        "status": status
+        "status": status,
+        "request_id": get_request_id()
     }
 
     if details:
