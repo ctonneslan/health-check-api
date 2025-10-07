@@ -2,3 +2,5 @@ fastapi
 uvicorn
 https
 python-dotenv
+pytest
+pytest-asyncio
