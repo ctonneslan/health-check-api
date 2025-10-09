@@ -30,7 +30,7 @@ def simulate_db_connection():
 def check_disk_usage():
     total, used, free = shutil.disk_usage("/")
     usage_percent = used / total * 100
-
+    
     if usage_percent >= DISK_FAIL_THRESHOLD:
         return "fail"
     elif usage_percent >= DISK_WARN_THRESHOLD:

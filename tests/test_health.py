@@ -11,17 +11,17 @@ from app.main import check_database, check_disk_usage, check_external_api
 # Use pytest-asyncio for async tests
 pytest_plugins = ("pytest_asyncio",)
 
-@mock.patch("app.main.simulate_db_connection")
+@mock.patch("app.health_checks.simulate_db_connection")
 def test_check_database_success(mock_sim):
     mock_sim.return_value = True
     assert check_database() == "ok"
 
-@mock.patch("app.main.simulate_db_connection")
+@mock.patch("app.health_checks.simulate_db_connection")
 def test_check_database_failure(mock_sim):
     mock_sim.return_value = False
     assert check_database() == "fail"
 
-@mock.patch("app.main.simulate_db_connection")
+@mock.patch("app.health_checks.simulate_db_connection")
 def test_check_database_exception(mock_sim):
     mock_sim.side_effect = Exception("Simulated error")
     assert check_database() == "fail"
